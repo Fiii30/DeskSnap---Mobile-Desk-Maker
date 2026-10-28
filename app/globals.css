@@ -1,4 +1,10 @@
 @import "tailwindcss";
+@config "../tailwind.config.js";
+
+/* Aturan CSS biasa dimulai setelah import dan konfigurasi. */
+* {
+  box-sizing: border-box;
+}
 
 * {
   box-sizing: border-box;

@@ -1,10 +1,7 @@
-import LoginScreen from "../components/Login/page";
-import DashboardScreen from "@/components/Dashboard/page";
-import ProfileScreen from "@/components/Profile/page";
-import PaymentScreen from "@/components/Payment/page";
-import EditorPreviewScreen from "@/components/Editor/page";
-import TemplateSelectScreen from "@/components/Template/page";
+// Mengimpor halaman dari folder components
+import DashboardPage from "@/components/Dashboard/DashboardPage";
 
+// Halaman utama aplikasi.
 export default function HomePage() {
-  return <EditorPreviewScreen  />;
+  return <DashboardPage />;
 }

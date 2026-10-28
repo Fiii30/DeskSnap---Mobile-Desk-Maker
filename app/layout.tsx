@@ -13,6 +13,7 @@ const jakarta = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: "Masuk | DeckSnap",
   description: "Ubah foto favoritmu menjadi deck kartu koleksi.",
+
 };
 
 export default function RootLayout({
