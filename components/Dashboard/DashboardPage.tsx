@@ -85,12 +85,10 @@ export default function DashboardPage() {
   function handleStartCreate() {
     // Paket gratis hanya untuk 2 deck yang sudah selesai diunduh.
     if (decksUsed >= 2) {
-      // Kuota habis, arahkan ke Pembayaran.
       router.push("/payment");
       return;
     }
 
-    // Kuota masih tersedia, menuju Pilih Template.
     router.push("/template");
   }
 
@@ -105,9 +103,14 @@ export default function DashboardPage() {
     }, 2800);
   }
 
-  // Membuka draft di Editor.
+  // Membuka draft di Editor sesuai statusnya.
   function handleOpenDraft(draft: DeckDraft) {
-    router.push(`/editor?deckId=${draft.id}&template=${draft.templateKey}`);
+    // Tambahkan mode selesai bila draft sudah selesai.
+    const mode = draft.status === "selesai" ? "&mode=selesai" : "";
+
+    router.push(
+      `/editor?deckId=${draft.id}&template=${draft.templateKey}${mode}`,
+    );
   }
 
   // Menghapus draft berdasarkan ID.
@@ -166,21 +169,12 @@ export default function DashboardPage() {
           <CreateDeckButton onClick={handleStartCreate} />
         </div>
 
-        {/* Judul daftar deck */}
-        <div className="mb-2 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-bold">Deck Kamu</h2>
-
-            <span className="rounded-full bg-surface-muted px-2 py-0.5 text-xs font-bold text-ink-soft">
-              {decks.length} deck
-            </span>
-          </div>
-        </div>
-
         {/* Draft tersimpan */}
         {isMounted && drafts.length > 0 && (
           <section className="mb-4">
-            <h2 className="mb-2 text-sm font-bold text-ink">Draft Tersimpan</h2>
+            <h2 className="mb-2 text-sm font-bold text-ink">
+              Draft Tersimpan
+            </h2>
 
             <div className="grid grid-cols-2 gap-3.5">
               {drafts.map((draft) => {
@@ -195,7 +189,9 @@ export default function DashboardPage() {
                       title: draft.title,
                       image: firstCard?.image ?? "",
                       cardCount: draft.cards.length,
-                      status: "Draft",
+                      // Label mengikuti status draft.
+                      status:
+                        draft.status === "selesai" ? "Siap Cetak" : "Draft",
                       timeLabel: new Date(draft.updatedAt).toLocaleDateString(
                         "id-ID",
                         {
@@ -213,8 +209,8 @@ export default function DashboardPage() {
           </section>
         )}
 
-        {/* Daftar deck atau empty state */}
-        {decks.length > 0 || drafts.length > 0 ? (
+        {/* Daftar deck bawaan atau empty state */}
+        {decks.length > 0 ? (
           <div className="grid grid-cols-2 gap-3.5">
             {decks.map((deck) => (
               <DeckCard
@@ -225,9 +221,9 @@ export default function DashboardPage() {
               />
             ))}
           </div>
-        ) : (
+        ) : drafts.length === 0 ? (
           <DeckEmptyState onCreateDeck={handleStartCreate} />
-        )}
+        ) : null}
       </div>
 
       {/* Menu deck */}

@@ -11,7 +11,7 @@ export type DraftCard = {
   skillTitle: string;
   skillDescription: string;
   image: string;
-  thumbTitle: string;
+  // thumbTitle: string;
 };
 
 // Tipe hasil edit visual kartu.
@@ -26,6 +26,7 @@ export type DeckDraft = {
   id: string;
   title: string;
   templateKey: string;
+  status: "draft" | "selesai";
   cards: DraftCard[];
   editStates: Record<string, DraftEditState>;
   updatedAt: string;
@@ -55,21 +56,20 @@ export function getDrafts(): DeckDraft[] {
 
 // Menyimpan atau memperbarui satu draft.
 export function saveDraft(draft: DeckDraft) {
-  // Mengambil draft yang sudah ada.
   const drafts = getDrafts();
-
-  // Mencari draft dengan ID yang sama.
   const existingIndex = drafts.findIndex((item) => item.id === draft.id);
 
-  // Memperbarui draft lama bila ada.
+  // Pertahankan status lama bila draft baru tidak menyertakan status.
+  const status = draft.status ?? drafts[existingIndex]?.status ?? "draft";
+
+  const draftWithStatus = { ...draft, status };
+
   if (existingIndex >= 0) {
-    drafts[existingIndex] = draft;
+    drafts[existingIndex] = draftWithStatus;
   } else {
-    // Menambah draft baru bila belum ada.
-    drafts.push(draft);
+    drafts.push(draftWithStatus);
   }
 
-  // Menyimpan seluruh daftar draft.
   localStorage.setItem(DRAFTS_KEY, JSON.stringify(drafts));
 }
 
@@ -89,23 +89,14 @@ export function deleteDraft(draftId: string) {
 }
 
 export function draftToDeck(draft: DeckDraft) {
-  // Mengambil kartu pertama sebagai sampul.
   const firstCard = draft.cards[0];
 
   return {
-    // ID deck sama dengan ID draft.
     id: draft.id,
-
-    // Judul deck.
     title: draft.title,
-
-    // Gambar sampul dari kartu pertama.
     image: firstCard?.image ?? "",
-
-    // Jumlah kartu dalam draft.
     cardCount: draft.cards.length,
-
-    // Jenis template draft.
     templateKey: draft.templateKey,
+    status: draft.status === "selesai" ? "Completed" : "Draft",
   };
 }

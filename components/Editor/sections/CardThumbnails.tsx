@@ -9,6 +9,7 @@ type CardThumbnailsProps = {
   deck: Card[];
   activeIndex: number;
   deckTitle: string;
+  completeMode: boolean;
   cameraInputRef: React.RefObject<HTMLInputElement | null>;
   onSelectCard: (index: number) => void;
   onAddCard: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -75,33 +76,36 @@ export default function CardThumbnails(props: CardThumbnailsProps) {
           </button>
         ))}
 
-        {/* Tombol tambah kartu */}
-        <button
-          type="button"
-          aria-label="Tambah gambar kartu"
-          onClick={() => props.cameraInputRef.current?.click()}
-          disabled={props.deck.length >= MAX_CARDS}
-          className={`flex h-20 w-16 shrink-0 flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed transition-all active:scale-95 ${
-            props.deck.length >= MAX_CARDS
-              ? "cursor-not-allowed border-surface-muted bg-surface-soft text-ink-muted"
-              : "border-surface-muted bg-surface-card text-ink-soft hover:border-primary hover:text-primary"
-          }`}
-        >
-          <span className="text-xl">+</span>
+        {!props.completeMode && (
+          <>
+            <button
+              type="button"
+              aria-label="Tambah gambar kartu"
+              onClick={() => props.cameraInputRef.current?.click()}
+              disabled={props.deck.length >= MAX_CARDS}
+              className={`flex h-20 w-16 shrink-0 flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed transition-all active:scale-95 ${
+                props.deck.length >= MAX_CARDS
+                  ? "cursor-not-allowed border-surface-muted bg-surface-soft text-ink-muted"
+                  : "border-surface-muted bg-surface-card text-ink-soft hover:border-primary hover:text-primary"
+              }`}
+            >
+              <span className="text-xl">+</span>
 
-          <span className="text-xs font-bold leading-tight">
-            {props.deck.length >= MAX_CARDS ? "Penuh" : "Tambah"}
-          </span>
-        </button>
+              <span className="text-xs font-bold leading-tight">
+                {props.deck.length >= MAX_CARDS ? "Penuh" : "Tambah"}
+              </span>
+            </button>
 
-        {/* Input galeri atau file manager */}
-        <input
-          ref={cameraInputRef}
-          type="file"
-          accept="image/*"
-          onChange={props.onAddCard}
-          className="hidden"
-        />
+            {/* Input galeri atau file manager */}
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              onChange={props.onAddCard}
+              className="hidden"
+            />
+          </>
+        )}
       </div>
     </div>
   );

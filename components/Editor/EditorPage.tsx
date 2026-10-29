@@ -103,6 +103,9 @@ export default function EditorPage() {
   const templateKey =
     (searchParams.get("template") as Template["key"]) ?? "tcg";
 
+  // Menandai apakah editor dibuka dalam mode selesai (read-only).
+  const isCompletedMode = searchParams.get("mode") === "selesai";
+
   // Input file dari kamera.
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -158,16 +161,15 @@ export default function EditorPage() {
     );
   }
 
-  // Menyimpan draft deck dan seluruh hasil editnya.
-  function handleSaveDraft() {
-    // Menentukan ID draft.
-    const id = currentDraftId || `deck-${Date.now()}`;
+  // Menyimpan draft deck dengan status tertentu.
+  function handleSaveDraft(status: "draft" | "selesai" = "draft") {
+    const id = currentDraftId || `deck-${crypto.randomUUID()}`;
 
-    // Menyusun data draft.
     const draft: DeckDraft = {
       id,
       title: deckTitle,
       templateKey,
+      status,
       cards: deck,
       editStates: {
         [card.id]: editState,
@@ -175,17 +177,14 @@ export default function EditorPage() {
       updatedAt: new Date().toISOString(),
     };
 
-    // Menyimpan draft.
     saveDraft(draft);
-
-    // Menyimpan ID draft aktif.
     setCurrentDraftId(id);
-
-    // Memberi tahu komponen lain bahwa draft berubah.
     window.dispatchEvent(new Event("storage"));
-
-    // Menampilkan toast.
-    showToast("Draft deck berhasil disimpan");
+    showToast(
+      status === "selesai"
+        ? "Deck selesai disimpan"
+        : "Draft deck berhasil disimpan",
+    );
   }
 
   // Memilih kartu dan memuat hasil editnya.
@@ -221,14 +220,16 @@ export default function EditorPage() {
     // Membuat kartu baru dari file.
     const newCard: Card = {
       ...card,
-      id: `card-${Date.now()}`,
+      
+      id: `card-${crypto.randomUUID()}`,
       image: URL.createObjectURL(file),
       index: `#${String(deck.length + 1).padStart(2, "0")}`,
-      thumbTitle: `Kartu ${deck.length + 1}`,
     };
 
     // Menambah kartu ke deck.
     setDeck((currentDeck) => [...currentDeck, newCard]);
+    // Jalankan AI otomatis untuk kartu baru.
+    generateCardText(newCard);
 
     // Menjadikan kartu baru aktif.
     setActiveIndex(deck.length);
@@ -252,6 +253,65 @@ export default function EditorPage() {
     updateActiveCard("image", card.image);
     setIsAiPreviewVisible(false);
     setOpenSheet(null);
+  }
+
+  // Generate teks kartu dari foto menggunakan AI.
+  async function generateCardText(targetCard: Card) {
+    try {
+      // Tandai sedang memproses.
+      setIsAiProcessing(true);
+
+      // Ambil gambar kartu.
+      const imageResponse = await fetch(targetCard.image);
+      const imageBlob = await imageResponse.blob();
+
+      // Ubah blob menjadi base64.
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(imageBlob);
+      });
+
+      // Pisahkan prefix data URL.
+      const [meta, base64Data] = base64.split(",");
+      const mimeType = meta.replace("data:", "").replace(";base64", "");
+
+      // Kirim ke API route.
+      const response = await fetch("/api/generate-card", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageBase64: base64Data, mimeType }),
+      });
+
+      // Ambil hasil JSON.
+      const result = await response.json();
+
+      // Bila gagal.
+      if (!response.ok) {
+        throw new Error(result.error || "Gagal generate");
+      }
+
+      // Perbarui kartu target dengan hasil AI.
+      setDeck((currentDeck) =>
+        currentDeck.map((currentCard) =>
+          currentCard.id === targetCard.id
+            ? {
+                ...currentCard,
+                name: result.name,
+                skillTitle: result.skillTitle,
+                skillDescription: result.skillDescription,
+                tier: result.tier,
+              }
+            : currentCard,
+        ),
+      );
+    } catch (error) {
+      console.error("AI generate gagal:", error);
+      showToast("Gagal generate teks kartu");
+    } finally {
+      setIsAiProcessing(false);
+    }
   }
 
   // Menyimpan nama deck.
@@ -305,8 +365,11 @@ export default function EditorPage() {
     showToast("Kartu berhasil dihapus");
   }
 
-  // Membuka modal unduh.
+  // Membuka modal unduh dan menandai deck selesai.
   function handleFinishAndDownload() {
+    // Simpan deck dengan status selesai.
+    handleSaveDraft("selesai");
+
     setDownloadPhase("confirm");
     setIsDownloadOpen(true);
   }
@@ -395,20 +458,22 @@ export default function EditorPage() {
     <main className="relative flex min-h-dvh flex-col bg-surface pb-44 pt-24 text-ink">
       <EditorHeader
         deckTitle={deckTitle}
-        onBack={() => router.push("/template")}
+        onBack={() => router.back()}
         onOpenMenu={() => setIsMenuOpen(true)}
       />
 
-      <div className="flex justify-end items-center gap-2 px-4">
-        <button
-          type="button"
-          onClick={handleDeleteCard}
-          disabled={deck.length <= 1}
-          className="border border-accent rounded-xl p-2 font-semibold transition-colors hover:bg-danger/20 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          Hapus kartu
-        </button>
-      </div>
+      {!isCompletedMode && (
+        <div className="flex justify-end items-center gap-2 px-4">
+          <button
+            type="button"
+            onClick={handleDeleteCard}
+            disabled={deck.length <= 1}
+            className="border border-accent rounded-xl p-2 font-semibold transition-colors hover:bg-danger/20 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Hapus kartu
+          </button>
+        </div>
+      )}
 
       <div className="mx-auto flex w-full max-w-md flex-col items-center px-4">
         <CardPreview
@@ -422,6 +487,7 @@ export default function EditorPage() {
         <CardThumbnails
           deck={deck}
           activeIndex={activeIndex}
+          completeMode={isCompletedMode}
           deckTitle={deckTitle}
           cameraInputRef={cameraInputRef}
           onSelectCard={selectCard}
@@ -429,23 +495,25 @@ export default function EditorPage() {
         />
 
         {/* Dua aksi edit */}
-        <div className="mt-4 grid w-full max-w-sm grid-cols-2 gap-2.5">
-          <button
-            type="button"
-            onClick={() => setOpenSheet("photo")}
-            className="flex items-center justify-center gap-2 rounded-xl border border-surface-muted bg-surface-card px-3 py-3 text-xs font-bold shadow-button transition-all hover:bg-surface-soft active:scale-[0.98]"
-          >
-            ✦ Foto & Gaya
-          </button>
+        {!isCompletedMode && (
+          <div className="mt-4 grid w-full max-w-sm grid-cols-2 gap-2.5">
+            <button
+              type="button"
+              onClick={() => setOpenSheet("photo")}
+              className="flex items-center justify-center gap-2 rounded-xl border border-surface-muted bg-surface-card px-3 py-3 text-xs font-bold shadow-button transition-all hover:bg-surface-soft active:scale-[0.98]"
+            >
+              ✦ Foto & Gaya
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setOpenSheet("details")}
-            className="flex items-center justify-center gap-2 rounded-xl border border-surface-muted bg-surface-card px-3 py-3 text-xs font-bold shadow-button transition-all hover:bg-surface-soft active:scale-[0.98]"
-          >
-            ✎ Edit
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={() => setOpenSheet("details")}
+              className="flex items-center justify-center gap-2 rounded-xl border border-surface-muted bg-surface-card px-3 py-3 text-xs font-bold shadow-button transition-all hover:bg-surface-soft active:scale-[0.98]"
+            >
+              ✎ Edit
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Hidden render semua kartu untuk export */}
@@ -489,29 +557,31 @@ export default function EditorPage() {
       </div>
 
       {/* CTA bawah */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-surface-muted bg-surface/95 px-4 pb-4 pt-2.5 backdrop-blur-md">
-        <div className="mx-auto flex max-w-md flex-col gap-2">
-          {/* Tombol simpan draft */}
-          <button
-            type="button"
-            onClick={async () => {
-              handleSaveDraft();
-              router.push("/");
-            }}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-surface-muted bg-surface-card py-3 text-sm font-bold text-ink shadow-button transition-all active:scale-[0.99]"
-          >
-            Simpan Draf dan Kembali
-          </button>
+      {!isCompletedMode && (
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-surface-muted bg-surface/95 px-4 pb-4 pt-2.5 backdrop-blur-md">
+          <div className="mx-auto flex max-w-md flex-col gap-2">
+            {/* Tombol simpan draft */}
+            <button
+              type="button"
+              onClick={async () => {
+                handleSaveDraft();
+                router.push("/");
+              }}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-surface-muted bg-surface-card py-3 text-sm font-bold text-ink shadow-button transition-all active:scale-[0.99]"
+            >
+              Simpan Draf dan Kembali
+            </button>
 
-          <button
-            type="button"
-            onClick={handleFinishAndDownload}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-bold tracking-wide text-white shadow-button transition-all active:scale-[0.99]"
-          >
-            Selesaikan & Unduh →
-          </button>
+            <button
+              type="button"
+              onClick={handleFinishAndDownload}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-bold tracking-wide text-white shadow-button transition-all active:scale-[0.99]"
+            >
+              Selesaikan & Unduh →
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Sheet Foto & Gaya */}
       {openSheet === "photo" && (
