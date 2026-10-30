@@ -2,7 +2,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Buat response yang bisa dimodifikasi.
   let response = NextResponse.next({ request });
 
@@ -34,7 +34,7 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Halaman yang wajib login.
-  const protectedRoutes = ["/", "/editor", "/profile"];
+  const protectedRoutes = ["/editor", "/profile"];
 
   // Bila belum login dan membuka halaman terproteksi.
   if (!user && protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route))) {

@@ -6,6 +6,8 @@ import { useState } from "react";
 // Router App Router untuk kembali ke halaman sebelumnya.
 import { useRouter } from "next/navigation";
 
+import { createClient } from "@/lib/supabase/client";
+
 // Komponen Profil yang sudah dipisah.
 import ProfileHeader from "./sections/ProfileHeader";
 import ProfileIdentity from "./sections/ProfileIdentity";
@@ -46,6 +48,16 @@ export default function ProfilePage() {
 
     setIsEditNameOpen(false);
   }
+  
+  async function handleConfirmLogout() {
+    const supabase = createClient();
+
+    // Sign out dari Supabase.
+    await supabase.auth.signOut();
+
+    // Arahkan ke halaman login.
+    router.push("/login");
+  }
 
   return (
     <main className="relative min-h-dvh bg-surface pb-10 pt-20 text-ink">
@@ -55,7 +67,9 @@ export default function ProfilePage() {
         <ProfileIdentity displayName={displayName} />
 
         <AccessSummary
-          onTopUp={() => alert("Prototype: fitur isi ulang token belum tersedia.")}
+          onTopUp={() =>
+            alert("Prototype: fitur isi ulang token belum tersedia.")
+          }
         />
 
         <ProfileMenu
@@ -101,10 +115,7 @@ export default function ProfilePage() {
       {isLogoutOpen && (
         <LogoutModal
           onCancel={() => setIsLogoutOpen(false)}
-          onConfirm={() => {
-            setIsLogoutOpen(false);
-            router.back();
-          }}
+          onConfirm={handleConfirmLogout}
         />
       )}
 

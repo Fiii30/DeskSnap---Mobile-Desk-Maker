@@ -1,7 +1,10 @@
 "use client";
 
-// State untuk status tombol login dan timer.
-import { useEffect, useRef, useState } from "react";
+// State untuk status tombol login.
+import { useState } from "react";
+
+// Client Supabase browser.
+import { createClient } from "@/lib/supabase/client";
 
 // Komponen-komponen kecil halaman Login.
 import LoginHeader from "./sections/LoginHeader";
@@ -17,33 +20,37 @@ export default function LoginPage() {
   // Status awal tombol.
   const [status, setStatus] = useState<LoginStatus>("idle");
 
-  // Menyimpan timer agar bisa dibersihkan.
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  // Pesan error bila OAuth gagal dimulai.
+  const [error, setError] = useState<string | null>(null);
 
-  // Membersihkan timer saat halaman ditutup.
-  useEffect(() => {
-    return () => {
-      timers.current.forEach((timer) => clearTimeout(timer));
-    };
-  }, []);
-
-  // Simulasi login Google.
-  function handleGoogleLogin() {
+  // Login Google asli via Supabase.
+  async function handleGoogleLogin() {
     if (status !== "idle") return;
 
     setStatus("loading");
+    setError(null);
 
-    const loadingTimer = setTimeout(() => {
-      setStatus("success");
+    // Client Supabase.
+    const supabase = createClient();
 
-      const resetTimer = setTimeout(() => {
-        setStatus("idle");
-      }, 2400);
+    // Arahkan user ke Google untuk pilih akun.
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        // Setelah Google selesai, kembali ke route callback kita.
+        redirectTo: `${window.location.origin}/auth/callback`,
+        // Paksa Google selalu menampilkan pilihan akun.
+        queryParams: {
+          prompt: "select_account",
+        },
+      },
+    });
 
-      timers.current.push(resetTimer);
-    }, 1200);
-
-    timers.current.push(loadingTimer);
+    // Bila gagal memulai OAuth.
+    if (error) {
+      setError(error.message);
+      setStatus("idle");
+    }
   }
 
   return (
@@ -95,26 +102,15 @@ export default function LoginPage() {
             Aman & langsung siap bikin deck
           </p>
 
-          <p className="mt-1.5 text-center text-[10px] leading-4 text-on-surface-soft">
-            Prototype · Login Google belum diaktifkan.
-          </p>
+          {/* Pesan error bila OAuth gagal dimulai */}
+          {error && (
+            <p className="mt-3 w-full rounded-lg bg-danger/10 px-4 py-2.5 text-center text-[11px] font-semibold text-danger">
+              {error}
+            </p>
+          )}
         </section>
 
         <LoginFooter />
-
-        {/* Toast simulasi */}
-        <div
-          role="status"
-          aria-live="polite"
-          className={`fixed bottom-14 left-1/2 z-50 flex max-w-[calc(100vw-32px)] -translate-x-1/2 items-center gap-2 rounded-full bg-surface-soft px-4 py-2.5 text-center text-[12px] font-semibold text-inverse-text shadow-lg transition-all duration-300 ${
-            status === "success"
-              ? "translate-y-0 opacity-100"
-              : "pointer-events-none translate-y-2 opacity-0"
-          }`}
-        >
-          <span className="text-primary-soft">✓</span>
-          Simulasi berhasil. Google belum terhubung.
-        </div>
       </div>
     </main>
   );

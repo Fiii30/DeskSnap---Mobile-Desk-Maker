@@ -60,11 +60,6 @@ export default function DashboardHeader({
           </span>
         </button>
 
-        <form action="/auth/signout" method="post">
-          <button type="submit" className="text-xs font-bold text-danger">
-            Keluar
-          </button>
-        </form>
       </div>
 
       {/* Jumlah deck ditampilkan sebagai teks kecil agar berguna, bukan hanya dekorasi. */}

@@ -17,7 +17,8 @@ export default function LogoutModal({ onCancel, onConfirm }: LogoutModalProps) {
           <h3 className="text-lg font-bold text-ink">Keluar dari Akun?</h3>
 
           <p className="text-xs leading-5 text-ink-soft">
-            Kamu harus masuk kembali menggunakan akun Google untuk mengakses deck kartu kamu.
+            Kamu harus masuk kembali menggunakan akun Google untuk mengakses
+            deck kartu kamu.
           </p>
         </div>
 
