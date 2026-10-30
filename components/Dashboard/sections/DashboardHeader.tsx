@@ -45,20 +45,26 @@ export default function DashboardHeader({
           </span>
         </div>
         {/* Avatar menuju Profil */}
-          <button
-            type="button"
-            aria-label="Buka profil pengguna"
-            onClick={onOpenProfile}
-            className="flex items-center gap-2 rounded-full bg-surface-muted p-1 pl-2.5 transition-transform active:scale-95"
-          >
-            <span className="flex items-center gap-1.5 text-xs font-semibold">
-              ◎ 12
-            </span>
+        <button
+          type="button"
+          aria-label="Buka profil pengguna"
+          onClick={onOpenProfile}
+          className="flex items-center gap-2 rounded-full bg-surface-muted p-1 pl-2.5 transition-transform active:scale-95"
+        >
+          <span className="flex items-center gap-1.5 text-xs font-semibold">
+            ◎ 12
+          </span>
 
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
-              RP
-            </span>
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
+            RP
+          </span>
+        </button>
+
+        <form action="/auth/signout" method="post">
+          <button type="submit" className="text-xs font-bold text-danger">
+            Keluar
           </button>
+        </form>
       </div>
 
       {/* Jumlah deck ditampilkan sebagai teks kecil agar berguna, bukan hanya dekorasi. */}
