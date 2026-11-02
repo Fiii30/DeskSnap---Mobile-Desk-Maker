@@ -1,10 +1,17 @@
 // Props ringkasan akses.
 type AccessSummaryProps = {
   onTopUp: () => void;
+  onOpenPremium: () => void;
+  templatesUnlocked: boolean;
+  isPremiumLoading: boolean;
 };
 
 // Ringkasan token dan hak akses.
-export default function AccessSummary({ onTopUp }: AccessSummaryProps) {
+export default function AccessSummary({
+  onOpenPremium,
+  templatesUnlocked,
+  isPremiumLoading,
+}: AccessSummaryProps) {
   return (
     <section className="space-y-2">
       <div className="flex items-center justify-between px-1">
@@ -12,11 +19,13 @@ export default function AccessSummary({ onTopUp }: AccessSummaryProps) {
           Saldo & Hak Akses
         </h3>
 
-        <span className="text-xs font-bold text-ink-muted">Terpisah & Mandiri</span>
+        <span className="text-xs font-bold text-ink-muted">
+          Terpisah & Mandiri
+        </span>
       </div>
 
       {/* Token */}
-      <div className="flex items-center justify-between rounded-xl bg-surface-card p-4 shadow-card">
+      {/* <div className="flex items-center justify-between rounded-xl bg-surface-card p-4 shadow-card">
         <div className="flex items-center gap-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-muted text-lg text-primary">
             ◎
@@ -37,45 +46,68 @@ export default function AccessSummary({ onTopUp }: AccessSummaryProps) {
         >
           Isi Ulang
         </button>
-      </div>
+      </div> */}
 
       {/* Status akses */}
       <div className="grid grid-cols-2 gap-2">
         <div className="flex flex-col justify-between rounded-xl bg-surface-card p-2 shadow-card">
-          <div>
+          <div role="button" onClick={onOpenPremium} className="cursor-default">
             <div className="mb-1 flex items-center justify-between">
               <span className="text-lg text-primary">▦</span>
-
-              <span className="rounded-full bg-surface-muted px-2 py-0.5 text-xs font-bold text-primary">
-                Aktif
-              </span>
+              {isPremiumLoading ? (
+                <span className="rounded-full bg-surface-muted px-2 py-0.5 text-xs font-bold text-ink-soft">
+                  Memuat...
+                </span>
+              ) : templatesUnlocked ? (
+                <span className="rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-surface">
+                  Aktif
+                </span>
+              ) : (
+                <span className="rounded-full bg-surface-muted px-2 py-0.5 text-xs font-bold text-ink-soft">
+                  Tidak Aktif
+                </span>
+              )}
             </div>
 
-            <div className="text-sm font-semibold text-ink">Template Premium</div>
-            <p className="mt-1 text-xs leading-5 text-ink-soft">Preset studio vintage</p>
+            <div className="text-sm font-semibold text-ink">
+              Template Premium
+            </div>
+            <p className="mt-1 text-xs leading-5 text-ink-soft">
+              {templatesUnlocked
+                ? "Semua template sudah terbuka untuk akunmu."
+                : "Upgrade paket template untuk membuka semua desain."}
+            </p>
           </div>
 
           <div className="mt-2 border-t border-surface-muted pt-1">
-            <span className="text-xs font-bold text-ink-muted">Permanen</span>
+            <span className="text-xs font-bold text-ink-muted">
+              {templatesUnlocked
+                ? "Premium"
+                : "Free"}
+            </span>
           </div>
         </div>
 
         <div className="flex flex-col justify-between rounded-xl bg-surface-card p-2 shadow-card">
-          <div>
+          <div role="button" onClick={onOpenPremium} className="cursor-default">
             <div className="mb-1 flex items-center justify-between">
               <span className="text-lg text-secondary">✦</span>
 
-              <span className="rounded-full bg-surface-hover px-2 py-0.5 text-xs font-bold text-ink-soft">
+              <span className="rounded-full bg-surface-muted px-2 py-0.5 text-xs font-bold text-ink-soft">
                 Tidak Aktif
               </span>
             </div>
 
             <div className="text-sm font-semibold text-ink">AI Style</div>
-            <p className="mt-1 text-xs leading-5 text-ink-soft">Render artistik foto</p>
+            <p className="mt-1 text-xs leading-5 text-ink-soft">
+              Render artistik foto
+            </p>
           </div>
 
           <div className="mt-2 border-t border-surface-muted pt-1">
-            <span className="text-xs font-semibold text-secondary">Buka Terpisah</span>
+            <span className="text-xs font-semibold text-secondary">
+              Buka Terpisah
+            </span>
           </div>
         </div>
       </div>
@@ -85,8 +117,8 @@ export default function AccessSummary({ onTopUp }: AccessSummaryProps) {
         <span className="mt-0.5 text-sm text-ink-muted">ⓘ</span>
 
         <p className="text-xs leading-5 text-ink-soft">
-          Akses Template Premium & AI Style dibeli terpisah. Membuka salah satu fitur tidak
-          otomatis mencakup yang lain.
+          Akses Template Premium & AI Style dibeli terpisah. Membuka salah satu
+          fitur tidak otomatis mencakup yang lain.
         </p>
       </div>
     </section>

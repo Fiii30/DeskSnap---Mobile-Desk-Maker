@@ -19,6 +19,9 @@ import PaymentStatusModal from "./modals/PaymentStatusModal";
 import type { PaymentStatus, ProductKey } from "./data/payment-types";
 import { PAYMENT_PRODUCTS } from "./data/payment-types";
 
+import { User } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/client";
+
 // Halaman Pembayaran.
 export default function PaymentPage() {
   const router = useRouter();
@@ -29,6 +32,8 @@ export default function PaymentPage() {
   // Modal dan status pembayaran.
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("pending");
+
+  const [user, setUser] = useState<User | null>(null);
 
   // Load snap.js Midtrans.
   useEffect(() => {
@@ -46,29 +51,93 @@ export default function PaymentPage() {
     };
   }, []);
 
+  useEffect(() => {
+    async function getUser() {
+      const supabase = createClient();
+      const { data } = await supabase.auth.getUser();
+      setUser(data.user);
+    }
+    getUser();
+  }, []);
+
   // Fungsi bayar.
   async function handlePay() {
-    const res = await fetch("/api/midtrans/create-transaction", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        orderId: `DECKSNAP-${Date.now()}`,
-        grossAmount: 25000,
-        customerName: "Nama User",
-        customerEmail: "user@email.com",
-      }),
-    });
+    const snap = (
+      window as unknown as {
+        snap?: {
+          pay: (
+            token: string,
+            options?: {
+              onSuccess?: () => void;
+              onPending?: () => void;
+              onError?: () => void;
+              onClose?: () => void;
+            },
+          ) => void;
+        };
+      }
+    ).snap;
 
-    const { token, error } = await res.json();
-
-    if (error) {
-      alert(error);
+    if (!snap) {
+      alert("Pembayaran belum siap. Coba lagi sebentar.");
       return;
     }
 
-    (
-      window as unknown as { snap?: { pay: (token: string) => void } }
-    ).snap?.pay(token);
+    try {
+      const supabase = createClient();
+
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session) {
+        router.replace("/login");
+        return;
+      }
+
+      const res = await fetch("/api/midtrans/create-transaction", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          productKey: "templates",
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error ?? "Gagal membuat transaksi.");
+      }
+
+      if (typeof data.token !== "string") {
+        throw new Error("Token pembayaran tidak tersedia.");
+      }
+
+      snap.pay(data.token, {
+        onSuccess: () => {
+          // Bukan mengaktifkan Premium dari browser.
+          // Profile akan membaca hasil aktivasi dari database.
+          router.push("/profile");
+        },
+        onPending: () => {
+          alert("Pembayaran masih menunggu penyelesaian.");
+        },
+        onError: () => {
+          alert("Pembayaran gagal. Silakan coba kembali.");
+        },
+        onClose: () => {
+          // Menutup popup tidak selalu berarti transaksi gagal.
+        },
+      });
+    } catch (error) {
+      alert(
+        error instanceof Error ? error.message : "Gagal membuka pembayaran.",
+      );
+    }
   }
 
   // Membuka modal pada status tertentu.
@@ -82,7 +151,7 @@ export default function PaymentPage() {
 
   return (
     <main className="relative min-h-dvh bg-surface pb-12 pt-20 text-ink">
-      <PaymentHeader onBack={() => router.back()} />
+      <PaymentHeader onBack={() => router.push("/")} />
 
       <div className="mx-auto w-full max-w-md px-4">
         <ProductSwitcher

@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
+import { useTemplatePremium } from "@/lib/hooks/useTemplatePremium";
+
 // Komponen Profil yang sudah dipisah.
 import ProfileHeader from "./sections/ProfileHeader";
 import ProfileIdentity from "./sections/ProfileIdentity";
@@ -40,6 +42,12 @@ export default function ProfilePage() {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const [user, setUser] = useState<User | null>(null);
+
+  const {
+    templatesUnlocked,
+    isLoading: isPremiumLoading,
+    error: premiumError,
+  } = useTemplatePremium();
 
   // Ambil data user saat halaman dibuka.
   useEffect(() => {
@@ -83,6 +91,9 @@ export default function ProfilePage() {
           onTopUp={() =>
             alert("Prototype: fitur isi ulang token belum tersedia.")
           }
+          onOpenPremium={() => router.push("/payment")}
+          templatesUnlocked={templatesUnlocked}
+          isPremiumLoading={isPremiumLoading}
         />
 
         <ProfileMenu

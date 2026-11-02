@@ -9,6 +9,8 @@ type TemplateCardProps = {
   template: Template;
   isActive: boolean;
   onSelect: (template: Template) => void;
+  isPremiumUnlocked: boolean;
+  isloadingPremium: boolean;
 };
 
 // Kartu satu template.
@@ -16,6 +18,8 @@ export default function TemplateCard({
   template,
   isActive,
   onSelect,
+  isPremiumUnlocked,
+  isloadingPremium,
 }: TemplateCardProps) {
   // Pengaman bila data template belum tersedia.
   if (!template) {
@@ -66,16 +70,22 @@ export default function TemplateCard({
         </div>
 
         {/* Overlay premium */}
-        {template.isPremium && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center rounded-lg bg-ink/35 p-2 text-center backdrop-blur-sm">
-            <span className="mb-1 flex h-8 w-8 items-center justify-center rounded-full bg-surface-card text-sm text-primary shadow-button">
-              🔒
-            </span>
+        {isloadingPremium ? (
+          "Memuat..."
+        ) : isPremiumUnlocked ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center rounded-lg p-2"></div>
+        ) : (
+          template.isPremium && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center rounded-lg bg-ink/35 p-2 text-center backdrop-blur-sm">
+              <span className="mb-1 flex h-8 w-8 items-center justify-center rounded-full bg-surface-card text-sm text-primary shadow-button">
+                🔒
+              </span>
 
-            <span className="text-[10px] font-bold text-surface-card drop-shadow">
-              Akses Terkunci
-            </span>
-          </div>
+              <span className="text-[10px] font-bold text-surface-card drop-shadow">
+                Akses Terkunci
+              </span>
+            </div>
+          )
         )}
       </div>
 
@@ -90,7 +100,7 @@ export default function TemplateCard({
           {/* Badge premium atau gratis */}
           {template.isPremium ? (
             <span className="inline-flex items-center gap-0.5 rounded-full bg-primary-soft px-1.5 py-0.5 text-[10px] font-bold text-primary-deep">
-              🔒 Premium
+              Premium
             </span>
           ) : (
             <span className="inline-flex items-center rounded-full bg-surface-muted px-1.5 py-0.5 text-[10px] font-bold text-ink-soft">

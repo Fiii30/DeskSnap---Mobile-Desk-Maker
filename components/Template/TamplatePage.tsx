@@ -16,6 +16,8 @@ import PremiumSheet from "./modals/PremiumSheet";
 import type { Template } from "./data/template-types";
 import { TEMPLATES } from "./data/template-types";
 
+import { useTemplatePremium } from "@/lib/hooks/useTemplatePremium";
+
 // Halaman Pilih Template.
 export default function TemplatePage() {
   // Router untuk navigasi antarhalaman.
@@ -27,6 +29,11 @@ export default function TemplatePage() {
 
   // Bottom sheet premium.
   const [isPremiumSheetOpen, setIsPremiumSheetOpen] = useState(false);
+
+  const {
+    templatesUnlocked,
+    isLoading: isPremiumLoading,
+  } = useTemplatePremium();
 
   // Memilih template tanpa langsung pindah halaman.
   function handleSelectTemplate(template: Template) {
@@ -69,6 +76,8 @@ export default function TemplatePage() {
           templates={TEMPLATES}
           selectedTemplate={selectedTemplate}
           onSelectTemplate={handleSelectTemplate}
+          isPremiumUnlocked={templatesUnlocked}
+          isloadingPremium={isPremiumLoading}
         />
 
         {/* Banner kualitas */}

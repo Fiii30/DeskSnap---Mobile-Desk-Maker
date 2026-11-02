@@ -26,7 +26,7 @@ export default function PaymentSummary({ product }: PaymentSummaryProps) {
         <div className="space-y-2 py-2">
           <div className="flex items-center justify-between text-sm leading-6 text-ink">
             <span>{product.receiptTitle}</span>
-            <span className="text-sm font-semibold">{product.price}</span>
+            <span className="text-sm font-semibold">Rp{product.price}</span>
           </div>
 
           <div className="flex items-center justify-between text-xs leading-5 text-ink-soft">
@@ -54,7 +54,7 @@ export default function PaymentSummary({ product }: PaymentSummaryProps) {
           </div>
 
           <span className="text-2xl font-extrabold leading-8 text-primary">
-            {product.price}
+            Rp{product.price}
           </span>
         </div>
       </div>

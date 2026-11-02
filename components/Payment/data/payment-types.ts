@@ -9,7 +9,7 @@ export type PaymentProduct = {
   key: ProductKey;
   title: string;
   description: string;
-  price: string;
+  price: number;
   receiptTitle: string;
   clarification: string;
   successMessage: string;
@@ -22,7 +22,7 @@ export const PAYMENT_PRODUCTS: Record<ProductKey, PaymentProduct> = {
     key: "template",
     title: "Template Premium",
     description: "Buat lebih banyak deck dan buka varian kartu eksklusif.",
-    price: "Rp49.000",
+    price: 49000,
     receiptTitle: "Template Premium (Lisensi Akun)",
     clarification:
       "Fitur AI Style dijual terpisah, tidak termasuk dalam paket ini.",
@@ -34,7 +34,7 @@ export const PAYMENT_PRODUCTS: Record<ProductKey, PaymentProduct> = {
     key: "ai",
     title: "AI Style",
     description: "Ubah gaya foto untuk seluruh kartu-kartumu secara otomatis.",
-    price: "Rp29.000",
+    price: 29000,
     receiptTitle: "AI Style (Lisensi Akun)",
     clarification: "Tidak termasuk paket Template Premium JQKA/Trivia.",
     successMessage: "Akses AI Style kini aktif permanen di akunmu.",

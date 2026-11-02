@@ -49,7 +49,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
 
           <span className="text-xl font-extrabold leading-7 text-ink">
-            {product.price}
+            Rp{product.price}
           </span>
         </div>
       </div>

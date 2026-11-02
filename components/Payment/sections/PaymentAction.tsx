@@ -35,7 +35,7 @@ export default function PaymentAction({
 
         <span className="flex items-center gap-1.5">
           <span className="text-sm font-semibold opacity-90">
-            {product.price}
+            Rp{product.price}
           </span>
           <span>→</span>
         </span>

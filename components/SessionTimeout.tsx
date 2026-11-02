@@ -5,8 +5,8 @@ import { useSessionTimeout } from "@/lib/hooks/useSessionTimeout";
 
 // Wrapper agar hook bisa dipakai di Server Component layout.
 export default function SessionTimeout() {
-  // Timebox 8 jam, inactivity 2 jam.
-  useSessionTimeout({ timeboxHours: 8, inactivityHours: 2 });
+  // Timebox 3 jam, inactivity 1 jam.
+  useSessionTimeout({ timeboxHours: 3, inactivityHours: 1 });
 
   // Tidak merender apa pun.
   return null;

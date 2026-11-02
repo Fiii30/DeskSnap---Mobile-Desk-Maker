@@ -9,6 +9,8 @@ type TemplateGridProps = {
   templates: Template[];
   selectedTemplate: Template["key"];
   onSelectTemplate: (template: Template) => void;
+  isPremiumUnlocked: boolean;
+  isloadingPremium: boolean;
 };
 
 // Grid berisi template.
@@ -16,6 +18,8 @@ export default function TemplateGrid({
   templates,
   selectedTemplate,
   onSelectTemplate,
+  isPremiumUnlocked,
+  isloadingPremium,
 }: TemplateGridProps) {
   return (
     // Grid dua kolom.
@@ -27,6 +31,8 @@ export default function TemplateGrid({
           template={template}
           isActive={selectedTemplate === template.key}
           onSelect={onSelectTemplate}
+          isPremiumUnlocked={isPremiumUnlocked}
+          isloadingPremium={isloadingPremium}
         />
       ))}
     </div>
