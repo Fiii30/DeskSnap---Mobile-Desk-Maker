@@ -7,7 +7,7 @@ import { useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 // Helper export PDF & ZIP.
-import { exportDeckToPdf, exportDeckToZip } from "@/lib/exportDeck";
+import { exportDeckToPdf, exportDeckToZip } from "@/lib/utils/exportDeck";
 
 // Helper draft.
 import {
@@ -15,7 +15,7 @@ import {
   saveDraft,
   type DeckDraft,
   type DraftEditState,
-} from "@/lib/draftStorage";
+} from "@/lib/utils/draftStorage";
 
 // Komponen Editor.
 import EditorHeader from "./sections/EditorHeader";
@@ -220,7 +220,7 @@ export default function EditorPage() {
     // Membuat kartu baru dari file.
     const newCard: Card = {
       ...card,
-      
+
       id: `card-${crypto.randomUUID()}`,
       image: URL.createObjectURL(file),
       index: `#${String(deck.length + 1).padStart(2, "0")}`,

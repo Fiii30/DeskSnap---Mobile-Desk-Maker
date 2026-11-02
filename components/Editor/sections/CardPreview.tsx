@@ -1,6 +1,6 @@
 // Tipe Card diimpor dari file data Editor.
 import type { Card } from "../data/editor-types";
-import { checkRarity } from "@/lib/checkRarity";
+import { checkRarity } from "@/lib/utils/checkRarity";
 
 // Props preview dengan hasil edit dan pengubah teks.
 type CardPreviewProps = {

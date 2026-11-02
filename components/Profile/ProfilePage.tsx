@@ -1,12 +1,13 @@
 "use client";
 
 // State untuk nama, accordion, dan modal.
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // Router App Router untuk kembali ke halaman sebelumnya.
 import { useRouter } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
 
 // Komponen Profil yang sudah dipisah.
 import ProfileHeader from "./sections/ProfileHeader";
@@ -38,6 +39,18 @@ export default function ProfilePage() {
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
+  const [user, setUser] = useState<User | null>(null);
+
+  // Ambil data user saat halaman dibuka.
+  useEffect(() => {
+    async function getUser() {
+      const supabase = createClient();
+      const { data } = await supabase.auth.getUser();
+      setUser(data.user);
+    }
+    getUser();
+  }, []);
+
   // Menyimpan nama baru.
   function handleSaveName() {
     const newName = nameInput.trim();
@@ -48,7 +61,7 @@ export default function ProfilePage() {
 
     setIsEditNameOpen(false);
   }
-  
+
   async function handleConfirmLogout() {
     const supabase = createClient();
 
@@ -64,7 +77,7 @@ export default function ProfilePage() {
       <ProfileHeader onBack={() => router.back()} />
 
       <div className="mx-auto flex w-full max-w-md flex-col gap-4 px-4 py-4">
-        <ProfileIdentity displayName={displayName} />
+        <ProfileIdentity displayName={displayName} user={user} />
 
         <AccessSummary
           onTopUp={() =>

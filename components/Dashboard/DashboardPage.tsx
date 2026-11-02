@@ -4,7 +4,11 @@
 import { useRouter } from "next/navigation";
 
 // Helper draft.
-import { deleteDraft, getDrafts, type DeckDraft } from "@/lib/draftStorage";
+import {
+  deleteDraft,
+  getDrafts,
+  type DeckDraft,
+} from "@/lib/utils/draftStorage";
 
 // State untuk deck, menu, dan toast.
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
@@ -172,9 +176,7 @@ export default function DashboardPage() {
         {/* Draft tersimpan */}
         {isMounted && drafts.length > 0 && (
           <section className="mb-4">
-            <h2 className="mb-2 text-sm font-bold text-ink">
-              Draft Tersimpan
-            </h2>
+            <h2 className="mb-2 text-sm font-bold text-ink">Draft Tersimpan</h2>
 
             <div className="grid grid-cols-2 gap-3.5">
               {drafts.map((draft) => {

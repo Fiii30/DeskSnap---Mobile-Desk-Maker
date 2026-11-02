@@ -1,10 +1,15 @@
+import type { User } from "@supabase/supabase-js";
 // Props identitas pengguna.
 type ProfileIdentityProps = {
   displayName: string;
+  user: User | null;
 };
 
 // Kartu identitas pengguna.
-export default function ProfileIdentity({ displayName }: ProfileIdentityProps) {
+export default function ProfileIdentity({
+  displayName,
+  user,
+}: ProfileIdentityProps) {
   return (
     <section className="relative flex flex-col items-center overflow-hidden rounded-xl bg-surface-card p-4 text-center shadow-card">
       <div className="relative mb-2">
@@ -12,7 +17,7 @@ export default function ProfileIdentity({ displayName }: ProfileIdentityProps) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzlxH8wjLISssDYUnByvAUZ2K8_B7yG3bherZwO5iglEXQXYhLdwtNm1U-_Dx8pVMgjAMZJi1w1KSQI9ukXce2CAHyPBY91pMUbEYFJzA6klmL5QEH-wPRGfrlH_7u2ypsqio2uv_AR5Iz352k0AmGnyhMEu_oUSFFh2I5drPzAbUGDfI2PHw5ZgyYsrBizDO-5shhjDcw8EVufTiMCA9-FL_hGDOppFAmkG6MkClbrgyz5LYeVPov"
-            alt="Foto profil Wafi"
+            alt="Foto profil Default"
             className="h-full w-full object-cover"
           />
         </div>
@@ -24,7 +29,9 @@ export default function ProfileIdentity({ displayName }: ProfileIdentityProps) {
 
       <h2 className="text-xl font-bold leading-7 text-ink">{displayName}</h2>
 
-      <p className="mb-1 text-xs leading-5 text-ink-soft">w***@gmail.com</p>
+      <p className="mb-1 text-xs leading-5 text-ink-soft">
+        {user?.email ?? "Memuat..."}
+      </p>
 
       <div className="inline-flex items-center gap-1.5 rounded-full bg-surface-muted px-3 py-1 text-xs font-bold text-ink-soft">
         <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">

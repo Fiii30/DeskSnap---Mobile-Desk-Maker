@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import type { ReactNode } from "react";
+import SessionTimeout from "@/components/SessionTimeout";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -24,6 +25,7 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body className={`${jakarta.variable} font-[family-name:var(--font-jakarta)] antialiased`}>
+        <SessionTimeout />
         {children}
       </body>
     </html>

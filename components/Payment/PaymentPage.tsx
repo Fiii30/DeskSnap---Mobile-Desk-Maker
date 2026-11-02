@@ -1,7 +1,7 @@
 "use client";
 
 // State untuk produk aktif, modal, dan status pembayaran.
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 // Router App Router.
 import { useRouter } from "next/navigation";
@@ -30,28 +30,45 @@ export default function PaymentPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("pending");
 
-  // Toast prototype.
-  const [toast, setToast] = useState<string | null>(null);
-
-  // Timer toast.
-  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Bersihkan timer.
+  // Load snap.js Midtrans.
   useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
+    script.setAttribute(
+      "data-client-key",
+      process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY!,
+    );
+    script.async = true;
+    document.body.appendChild(script);
+
     return () => {
-      if (toastTimer.current) clearTimeout(toastTimer.current);
+      document.body.removeChild(script);
     };
   }, []);
 
-  // Menampilkan toast.
-  function showToast(message: string) {
-    setToast(message);
+  // Fungsi bayar.
+  async function handlePay() {
+    const res = await fetch("/api/midtrans/create-transaction", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orderId: `DECKSNAP-${Date.now()}`,
+        grossAmount: 25000,
+        customerName: "Nama User",
+        customerEmail: "user@email.com",
+      }),
+    });
 
-    if (toastTimer.current) clearTimeout(toastTimer.current);
+    const { token, error } = await res.json();
 
-    toastTimer.current = setTimeout(() => {
-      setToast(null);
-    }, 2400);
+    if (error) {
+      alert(error);
+      return;
+    }
+
+    (
+      window as unknown as { snap?: { pay: (token: string) => void } }
+    ).snap?.pay(token);
   }
 
   // Membuka modal pada status tertentu.
@@ -78,10 +95,7 @@ export default function PaymentPage() {
 
         <PaymentSummary product={product} />
 
-        <PaymentAction
-          product={product}
-          onContinue={() => openPaymentStatus("pending")}
-        />
+        <PaymentAction product={product} onContinue={handlePay} />
 
         <SimulationPanel
           activeProduct={activeProduct}
@@ -98,18 +112,6 @@ export default function PaymentPage() {
           onClose={() => setIsModalOpen(false)}
           onChangeStatus={setPaymentStatus}
         />
-      )}
-
-      {/* Toast */}
-      {toast && (
-        <div
-          role="status"
-          aria-live="polite"
-          className="fixed left-1/2 top-24 z-50 flex max-w-[calc(100vw-32px)] -translate-x-1/2 items-center gap-2 rounded-full bg-dark px-4 py-2.5 text-xs font-semibold text-dark-text shadow-card-strong"
-        >
-          <span className="text-primary-soft">✦</span>
-          <span className="truncate">{toast}</span>
-        </div>
       )}
     </main>
   );
